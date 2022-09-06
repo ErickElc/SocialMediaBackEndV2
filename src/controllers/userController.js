@@ -40,11 +40,27 @@ class userController{
         const token = jwt.sign({_id: userSelected.id}, process.env.SECRET_TOKEN)
 
 
-        res.header('authorization-token', token);
+        res.status(202).send(token)
 
-
-        res.status(202).send("User Logged!")
-
+    }
+    static async UserData (req, res){
+        try {
+            const userSelected = await userModel.findOne({email: req.body.email});
+            const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
+            if(authorization.status === 403){
+                return res.status(400).send('Não foi possível pegar o dados do usuário!');
+            }
+            const userData = {
+                id_: userSelected._id,
+                name: userSelected.name,
+                age: userSelected.age,
+                admin: userSelected.admin,
+                createdDate: userSelected.createdDate
+            }
+            res.status(200).send(userData);
+        } catch (error) {
+            res.status(400).send('Não foi possível pegar o dados do usuário!' + error)
+        }
     }
 }
 

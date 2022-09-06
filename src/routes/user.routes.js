@@ -10,6 +10,7 @@ const router = express.Router();
 router.get("/", (req, res)=>{
         res.status(200).send("Bem vindo há api!");
     })
+    .post('/user-data', userController.UserData)
     .post('/cadastrar', userController.registerUser)
     .post('/login', userController.loginUser);
 

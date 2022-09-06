@@ -5,7 +5,6 @@ class postController{
     static async sendPost(req, res){
         const post = new postModel({
             title: req.body.title,
-            files: req.body.files,
             autor: req.body.autor
         })
         try {

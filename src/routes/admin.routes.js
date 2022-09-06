@@ -14,7 +14,7 @@ router
             res.status(403).send("Not admin: Acess Denied");
         }
     })
-    .get("/free", authController.authController, (req, res)=>{
+    .post("/free", authController.authController, (req, res)=>{
         res.send("Só quem está logado pode ver esse conteúdo");
     })
  

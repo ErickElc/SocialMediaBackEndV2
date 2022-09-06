@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 class authController{
     static async authController(req, res, next){
-        const token = req.header("authorization-token");
-        if(!token) return res.status(401).send("Acess Denied");
+        const token = req.body.token
+        if(!token) return res.status(403).send("Acess Denied");
         try{
             const userVerifed = jwt.verify(token, process.env.SECRET_TOKEN);
             req.user = userVerifed;
