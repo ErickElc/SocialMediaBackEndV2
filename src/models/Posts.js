@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
 
-
 const postsSchema = mongoose.Schema({
-    title: {type: String, required: true, min: 5, max: 300},
-    // image: {type: File},
+    content: {type: String, required: true, min: 5, max: 300 ,required:true},
     autor: {type: mongoose.Schema.Types.ObjectId, ref:"user", required: true},
     createdDate: {type: Date, default: Date.now}
 })

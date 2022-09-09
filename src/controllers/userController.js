@@ -3,14 +3,14 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const saltKey = bcrypt.genSaltSync(14);
-
+/// Controles do usuário --- RF (01 a 07);
 class userController{
 
     static async registerUser(req, res){
         const EmailExist = await userModel.findOne({email: req.body.email});
-        if(EmailExist)  return res.status(400).send("Não foi possível cadastrar esse e-mail, pois ele já foi cadastrado!")       
+        if(EmailExist)  return res.status(400).send("Não foi possível cadastrar esse e-mail, pois ele já foi cadastrado!");     
         
-        const cryptPassword = bcrypt.hashSync(req.body.password, saltKey)
+        const cryptPassword = bcrypt.hashSync(req.body.password, saltKey);
 
         const userRegister = new userModel({
             name: req.body.name,
@@ -36,12 +36,10 @@ class userController{
 
         if(!passwordMatch) return res.status(400).send("Email or password incorrect");
 
-
-        const token = jwt.sign({_id: userSelected.id}, process.env.SECRET_TOKEN)
-
-
-        res.status(202).send(token)
-
+        const token = jwt.sign({_id: userSelected.id}, process.env.SECRET_TOKEN,{
+            expiresIn: '12h'
+        });
+        res.status(202).send(token);
     }
     static async UserData (req, res){
         try {
@@ -56,10 +54,10 @@ class userController{
                 age: userSelected.age,
                 admin: userSelected.admin,
                 createdDate: userSelected.createdDate
-            }
+            };
             res.status(200).send(userData);
         } catch (error) {
-            res.status(400).send('Não foi possível pegar o dados do usuário!' + error)
+            res.status(400).send('Não foi possível pegar o dados do usuário!' + error);
         }
     }
 }
