@@ -60,6 +60,22 @@ class userController{
             res.status(400).send('Não foi possível pegar o dados do usuário!' + error);
         }
     }
+    static async listOneUser(req, res){
+        const id = req.params.id;
+        try {
+            const userSelected = await userModel.findOne({_id: id})
+            const userData = {
+                _id: userSelected._id,
+                name: userSelected.name,
+                age: userSelected.age,
+                email: userSelected.email,
+                createdDate: userSelected.age
+            }
+            res.status(200).send(userData);
+        } catch (error) {
+            res.status(404).send('Houve um erro: ' + error);
+        }
+    }
 }
 
 module.exports = userController;

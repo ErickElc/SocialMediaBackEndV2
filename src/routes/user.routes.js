@@ -10,8 +10,9 @@ const router = express.Router();
 router.get("/", (req, res)=>{
         res.status(200).send("Bem vindo há api!");
     })
-    .post('/user-data', userController.UserData)
-    .post('/cadastrar', userController.registerUser)
-    .post('/login', userController.loginUser);
+    .get('/users/user/:id', userController.listOneUser)
+    .post('/users/user-data', userController.UserData)
+    .post('/users/cadastrar', userController.registerUser)
+    .post('/users/login', userController.loginUser);
 
 module.exports = router;

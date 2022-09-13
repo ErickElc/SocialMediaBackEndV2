@@ -1,5 +1,6 @@
 const postModel = require("../models/Posts");
 const jwt = require("jsonwebtoken");
+const userModel = require("../models/User");
 
 
 // Controle das publicações --- RF(08 a 12);
@@ -18,8 +19,8 @@ class postController{
     static async listPostForUser(req, res){
         const id = req.params.id;
         try {
-            const listPost = await postModel.findOne({_id: id});
-            res.status(200).send(listPost);
+            const userPost = await postModel.find({autor: id}).populate({path:'autor', select: 'name email createdDate age'}).exec();
+            res.status(200).send(userPost);
         } 
         catch (error) {
             res.status(400).send(error);
