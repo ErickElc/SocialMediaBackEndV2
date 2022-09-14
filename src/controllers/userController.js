@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const saltKey = bcrypt.genSaltSync(14);
 /// Controles do usuário --- RF (01 a 07);
 class userController{
-
+    // RF (01)
     static async registerUser(req, res){
         const EmailExist = await userModel.findOne({email: req.body.email});
         if(EmailExist)  return res.status(400).send("Não foi possível cadastrar esse e-mail, pois ele já foi cadastrado!");     
@@ -27,7 +27,8 @@ class userController{
         }
 
     }
-    static async loginUser(req, res){
+    // RF (02)
+    static async loginUser(req, res){                                                            
         const userSelected = await userModel.findOne({email: req.body.email});
         
         if(!userSelected) return res.status(400).send("Email or password incorrect");
@@ -41,25 +42,22 @@ class userController{
         });
         res.status(202).send(token);
     }
-    static async UserData (req, res){
+    // RF (03)
+    static async recoverPassword(req, res){
+        if(!req.body.email) return res.status(400).send('Não foi possível recuperar a senha, pois o e-mail não foi informado!');
         try {
             const userSelected = await userModel.findOne({email: req.body.email});
-            const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
-            if(authorization.status === 403){
-                return res.status(400).send('Não foi possível pegar o dados do usuário!');
-            }
-            const userData = {
-                id_: userSelected._id,
-                name: userSelected.name,
-                age: userSelected.age,
-                admin: userSelected.admin,
-                createdDate: userSelected.createdDate
-            };
-            res.status(200).send(userData);
+            if(userSelected.age != req.body.age) return res.status(400).send('Não foi possível recuperar a senha, pois a idade não confere!');
+            const cryptPassword = bcrypt.hashSync(req.body.password, saltKey);
+            await userModel.updateOne({email: req.body.email}, {$set:{
+                password: cryptPassword
+            }});
+            res.status(200).send('Senha alterada com sucesso!');
         } catch (error) {
-            res.status(400).send('Não foi possível pegar o dados do usuário!' + error);
+            res.status(400).send('Houve um erro: ' + error);
         }
     }
+    // RF(04)
     static async listOneUser(req, res){
         const id = req.params.id;
         try {
@@ -72,6 +70,48 @@ class userController{
                 createdDate: userSelected.age
             }
             res.status(200).send(userData);
+        } catch (error) {
+            res.status(404).send('Houve um erro: ' + error);
+        }
+    }
+    // RF(05)
+    static async editUserData(req, res){
+        try {
+            const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
+            if(findUser._id == authorization._id)return res.status(403).send('Não foi possível editar os dados do usuário!');
+            const cryptPassword = bcrypt.hashSync(req.body.password, saltKey);
+            await userModel.updateOne({_id: req.params.id}, {$set:{
+                name: req.body.name,
+                age: req.body.age,
+                email: req.body.email,
+                password: cryptPassword
+            }});
+            res.status(200).send('Dados do usuário editados com sucesso!');
+        } catch (error) {
+            res.status(404).send('Houve um erro: ' + error);
+        }
+    }
+    //RF (06)
+    static async habilitarPerfil(req, res){
+        try {
+            const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
+            if(findUser._id == authorization._id)return res.status(403).send('Não foi possível editar os dados do usuário!');
+            await userModel.updateOne({email: req.body.email}, {$set:{
+                habilitado: req.body.habilitado
+            }});
+            res.status(200).send('Perfil habilitado com sucesso!');
+        } catch (error) {
+            res.status(400).send('Houve um erro: ' + error);
+        }
+    }
+    //RF (07)
+    static async deleteUser(req, res){
+
+        try {
+            const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
+            if(findUser._id == authorization._id)return res.status(403).send('Não foi possível editar os dados do usuário!');
+            await userModel.deleteOne({_id: req.params.id});
+            res.status(200).send('Usuário deletado com sucesso!');
         } catch (error) {
             res.status(404).send('Houve um erro: ' + error);
         }

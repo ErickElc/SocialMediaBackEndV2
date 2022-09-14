@@ -7,6 +7,7 @@ const userSchema = mongoose.Schema({
     email: {type: String, required: true, unique: true, min: 5, max: 100},
     password:{type: String, required: true, min: 6, max: 120, },
     admin: {type: Boolean, default: false},
+    habilitado: {type: Boolean, default: true},
     createdDate: {type: Date, default: Date.now}
 });
 const userModel = mongoose.model("user", userSchema);
