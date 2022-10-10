@@ -1,15 +1,50 @@
 const jwt = require('jsonwebtoken');
+const userModel = require('../models/User');
+
+// Access Routes Control
+
 class authController{
-    static async authController(req, res, next){
-        const token = req.body.token
+    // Authorization for users still logged
+    static async authLogged(req, res){  
+        const token = req.body.token;
         if(!token) return res.status(403).send("Acess Denied");
         try{
             const userVerifed = jwt.verify(token, process.env.SECRET_TOKEN);
+            if(!userVerifed) return res.status(403).send("Access Denied");
             req.user = userVerifed;
-            next();
-        }
-        catch(err){
+            res.status(202).send("Access authorized");
+        } catch(err){
             res.status(403).send("Acess Denied");
+        }
+    }
+    // Authorization for admin routes
+    static async authAdmin(req, res){ 
+        const token = req.body.token;
+        if(!token) return res.status(403).send("Access Denied");
+        try {
+            const userSelected = await userModel.findOne({email: req.body.email});
+            if(userSelected.admin !== true) return res.status(403).send('Access Denied');
+            const userVerifed = jwt.verify(token, process.env.SECRET_TOKEN);
+            if(!userVerifed) return res.status(403).send('Access Denied');
+            res.status(202).send("Access Granted");
+        } catch (error) {
+            res.status(403).send("Access Denied");
+        }
+    }
+    // Authorization for private user pages; 
+    static async authPrivatePage(req, res){
+        const token = req.body.token;
+        const {id} = req.params;
+        if(!token) return res.status(403).send('Access Denied');
+        try {
+            const user = await userModel.findOne({email: req.body.email});
+            if(!user)return res.status(403).send('Access Denied');
+            const authorization = jwt.verify(token, process.env.SECRET_TOKEN);
+            if(!authorization) return res.status(403).send('Access Denied');
+            if(id !== user._id) return res.status(403).send('Access Denied');
+            res.stauts(202).send('Access Granted')
+        } catch (error) {
+            res.status(403).send('Access Denied');            
         }
     }
 }

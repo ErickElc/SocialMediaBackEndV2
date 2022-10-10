@@ -3,16 +3,17 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const saltKey = bcrypt.genSaltSync(14);
+
 /// Controles do usuário --- RF (01 a 07);
+
 class userController{
 
     // RF (01) WORKING
+
     static async registerUser(req, res){
         const EmailExist = await userModel.findOne({email: req.body.email});
         if(EmailExist)  return res.status(400).send("Não foi possível cadastrar esse e-mail, pois ele já foi cadastrado!");     
-        
         const cryptPassword = bcrypt.hashSync(req.body.password, saltKey);
-
         const userRegister = new userModel({
             name: req.body.name,
             age: req.body.age,
@@ -29,6 +30,7 @@ class userController{
 
     }
     // RF (02) WORKING
+    
     static async loginUser(req, res){                                                            
         const userSelected = await userModel.findOne({email: req.body.email});
         if(!userSelected) return res.status(400).send("Email or password incorrect");
@@ -42,6 +44,7 @@ class userController{
         res.status(202).send(token);
     }
     // RF (03) WORKING
+
     static async recoverPassword(req, res){
         if(!req.body.email) return res.status(400).send('Não foi possível recuperar a senha, pois o e-mail não foi informado!');
         try {
@@ -57,17 +60,18 @@ class userController{
         }
     }
     // RF(04) WORKING
+    
     static async listOneUser(req, res){
         const id = req.params.id;
         if(!id)return res.status(400).send('Não foi possível listar o usuário, pois o id não foi informado!');
         try {
-            const userSelected = await userModel.findOne({email: id});
-            const userData = {
+            const userSelected = await userModel.findOne({_id: id});
+              const userData = {
                 _id: userSelected._id,
                 name: userSelected.name,
                 age: userSelected.age,
                 email: userSelected.email,
-                createdDate: userSelected.age
+                createdDate: userSelected.createdDate
             };
             res.status(200).send(userData);
         } catch (error) {
@@ -78,7 +82,7 @@ class userController{
     static async editUserData(req, res){
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
-            if(findUser._id == authorization._id)return res.status(403).send('Não foi possível editar os dados do usuário!');
+            if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
             const cryptPassword = bcrypt.hashSync(req.body.password, saltKey);
             await userModel.updateOne({_id: req.params.id}, {$set:{
                 name: req.body.name,
@@ -95,12 +99,11 @@ class userController{
     static async habilitarPerfil(req, res){
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
-            const userSelected = await userModel.findOne({email: req.body.email});
-            if(userSelected._id != authorization._id)return res.status(403).send('Não foi possível editar os dados do usuário!');
+            if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
             await userModel.updateOne({email: req.body.email}, {$set:{
                 habilitado: req.body.habilitado
             }});
-            res.status(200).send('Habilitado!');
+            res.status(200).send((req.body.habilitado === true) ? 'Habilitado!' : "desabilitado");
         } catch (error) {
             res.status(400).send('Houve um erro: ' + error);
         }
@@ -111,23 +114,21 @@ class userController{
         if(!id)return res.status(400).send('Não foi possível deletar o usuário, pois o id não foi informado!');
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
-            const findUser = await userModel.findOne({_id: id});
-            if(findUser._id != authorization._id)return res.status(403).send('Não foi possível deletar o usuário!');
-            await userModel.deleteOne({_id: req.params.id});
+            if(!authorization)return res.status(403).send('Não foi possível deletar o usuário!');
+            await userModel.findOneAndRemove({_id: req.params.id});
             res.status(200).send('Usuário deletado com sucesso!');
         } catch (error) {
             res.status(400).send('Houve um erro: ' + error);
         }
     }
-    //RF (PLUS) WORKING
+    //RF (13) WORKING
     static async listAllUsers(req, res){
         try {
-            const users = await userModel.find();
-            res.status(200).send(users);
+            const userSelected = await userModel.find().populate({path: "_id" ,selected: '_id name age email createdDate'}).exec();
+            res.status(200).send(userSelected);
         } catch (error) {
             res.status(400).send('Houve um erro: ' + error);
         }
     }
 }
-
 module.exports = userController;

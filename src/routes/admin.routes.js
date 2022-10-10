@@ -6,17 +6,7 @@ router = express.Router();
 
 
 router
-    .get("/", authController.authController, (req, res)=>{
-        if(req.user.admin == true){
-            res.send("Só admin pode Rodar");
-        }
-        else{
-            res.status(403).send("Not admin: Acess Denied");
-        }
-    })
-    .post("/free", authController.authController, (req, res)=>{
-        res.send("Só quem está logado pode ver esse conteúdo");
-    })
- 
-
+    .post('/free', authController.authLogged)
+    .post('/admin', authController.authAdmin)
+    .post('/private/free/:id', authController.authPrivatePage);
 module.exports = router;
