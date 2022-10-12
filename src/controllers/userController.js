@@ -1,6 +1,8 @@
+const UploadImage = require("../uploadImages/upload.js");
 const userModel = require("../models/User.js");
+const jwt = require("jsonwebtoken"); 
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const fs = require('fs');
 
 const saltKey = bcrypt.genSaltSync(14);
 
@@ -81,19 +83,30 @@ class userController{
     }
     // RF(05) WORKING
     static async editUserData(req, res){
-        const {id} = req.params
+        const {id} = req.params;
+        const {filename} = req.file;
+        if(!id) return res.status(400).send('Não foi possível deletar o usuário, pois o id não foi informado!');
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
             if(!authorization) return res.status(403).send('Não foi possível editar os dados do usuário!');
             const selectedUser = await userModel.findOne({_id: id});
             if(!selectedUser) return res.status(400).send('Não foi possível editar os dados do usuário!');
+            if(selectedUser._id != id) return res.status(403).send('Você não pode fazer essa ação!')
             const cryptPassword = (req.body.password) ? bcrypt.hashSync(req.body.password, saltKey) : (selectedUser.password)
+            const response = await UploadImage(filename)
             await userModel.updateOne({_id: req.params.id}, {$set:{
                 name: (!req.body.name) ? selectedUser.name : req.body.name,
                 age: (!req.body.age) ? selectedUser.age : req.body.age,
                 email: (!req.body.email) ? selectedUser.email : req.body.email,
-                password: cryptPassword
+                password: cryptPassword,
+                avatar: (!filename) ? response.url : selectedUser.avatar, 
             }});
+            if(response.status){
+                fs.unlink(`./src/temp/uploads/${filename}`, function (err){
+                    if (err) throw err;
+                    console.log('Arquivo deletado!');
+                });
+            }
             res.status(200).send('Dados do usuário editados com sucesso!');
         } catch (error) {
             res.status(404).send('Houve um erro: ' + error);
@@ -102,13 +115,17 @@ class userController{
     //RF (06) WORKING
     static async habilitarPerfil(req, res){
         const {id} = req.params;
+        if(!id)return res.status(400).send('Não foi possível deletar o usuário, pois o id não foi informado!');
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
-            if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
+            if(!authorization) return res.status(403).send('Não foi possível editar os dados do usuário!');
+            const selectedUser = await userModel.findOne({email: req.body.email});
+            if(!selectedUser) return res.status(400).send('Não foi possível editar os dados do usuário!');
+            if(selectedUser._id != id) return res.status(403).send('Você não pode fazer essa ação!')
             await userModel.updateOne({_id: id}, {$set:{
                 habilitado: req.body.habilitado
             }});
-            res.status(200).send((req.body.habilitado === true) ? 'Habilitado!' : "desabilitado");
+            res.status(200).send((req.body.habilitado === true) ? true : false);
         } catch (error) {
             res.status(400).send('Houve um erro: ' + error);
         }
@@ -122,6 +139,9 @@ class userController{
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
             if(!authorization) return res.status(403).send('Não foi possível deletar o usuário!');
+            const selectedUser = await userModel.findOne({_id: id});
+            if(!selectedUser) return res.status(400).send('Não foi possível editar os dados do usuário!');
+            if(selectedUser._id != id) return res.status(403).send('Você não pode fazer essa ação!')
             await userModel.findOneAndRemove({_id: req.params.id});
             res.status(200).send('Usuário deletado com sucesso!');
         } catch (error) {
@@ -133,7 +153,7 @@ class userController{
 
     static async listAllUsers(req, res){
         try {
-            const userSelected = await userModel.find().populate({path: "_id" ,selected: '_id name age email createdDate'}).exec();
+            const userSelected = await userModel.find();
             res.status(200).send(userSelected);
         } catch (error) {
             res.status(400).send('Houve um erro: ' + error);
