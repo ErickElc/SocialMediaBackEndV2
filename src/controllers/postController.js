@@ -1,6 +1,5 @@
 const postModel = require("../models/Posts");
 const jwt = require("jsonwebtoken");
-// const userModel = require("../models/User");
 const google = require('googleapis');
 const UploadImage = require("../uploadImages/upload");
 const driveId = "1XFhXVJtzv3MHDU1svOY5hoQVcgyr3Ovy";
@@ -8,7 +7,8 @@ const driveId = "1XFhXVJtzv3MHDU1svOY5hoQVcgyr3Ovy";
 // Controle das publicações --- RF(08 a 12);
 
 class postController{
-    // RF(08) - working
+
+    // RF(08) - 
     static async sendPost(req, res){
         const image_url = await UploadImage(req.body.imagem)
         console.log(image_url)
