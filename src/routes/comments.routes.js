@@ -5,9 +5,9 @@ const routerComments  = express.Router();
 
 
 routerComments
-    .get('/comments/list/all', commentsController.listAllComments)
-    .get('/comments/list/:id', commentsController.listPostComments)
-    .post('/comments/new/:id', commentsController.createComment)
+    .get('/comments/list/all', commentsController.listAllComments) // RF COMMENTS 02
+    .get('/comments/list/:id', commentsController.listPostComments) // RF COMMENTS 03
+    .post('/comments/new/:id', commentsController.createComment) // RF COMMENTS 01
 
 
 

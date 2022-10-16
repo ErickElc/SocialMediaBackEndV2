@@ -30,7 +30,7 @@ class commentsController{
         try {
             const selectedUser = await userModel.findOne({email: req.body.email});
             if(!selectedUser) return res.status(400).send('Não foi possível fazer esse comentário');
-            const newComment = new commentModel({
+            const newComment = new commentsModel({
                 content: req.body.cotent,
                 autorId: selectedUser._id,
                 postId: id
@@ -41,6 +41,21 @@ class commentsController{
             res.status(500).send('Não foi possível fazer esse comentário!')
         }
 
+    }
+    // RF - Comments 04
+    static async deleteComment(req, res){
+        const {id} = req.params;
+        const token = req.body.token;
+        if(!token) return res.status(403).send('Não foi possível fazer esse comentário');
+        try {
+            const authorization = jwt.verify(token, process.env.SECRET_TOKEN);
+            if(!authorization) return res.status(403).send('Access Denied');
+
+            await commentsModel.findOneAndRemove({_id: id})
+            res.status(200).send('Post deletado com sucesso!')
+        } catch (error) {
+            res.status(403).send('Error For Access' + error);
+        }
     }
 }
 
