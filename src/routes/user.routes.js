@@ -12,6 +12,7 @@ router.get("/", (req, res)=>{
     })
     .get('/users/all', userController.listAllUsers) //RF (13) // RF(04)
     .get('/users/:id', userController.listOneUser) // RF (04)
+    .post('/users/list/email', userController.listOneEmail) // RF(04)
     .post('/users/cadastrar', userController.registerUser) // RF (01)
     .post('/users/login', userController.loginUser) // RF (02)
     .put('/users/habilitar/:id', userController.habilitarPerfil) // RF (06)
