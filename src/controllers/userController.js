@@ -78,6 +78,25 @@ class userController{
             res.status(400).send('Houve um erro: ' + error);
         }
     }
+    // RF(04) Working
+    static async listOneEmail(req, res){
+        if(!token) return res.stauts(400).send('Não foi possível executar essa ação');
+        try {
+            const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
+            if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
+            const userSelected = await userModel.findOne({email: req.body.email});
+            const userData = {
+                _id: userSelected._id,
+                name: userSelected.name,
+                age: userSelected.age,
+                email: userSelected.email,
+                createdDate: userSelected.createdDate
+            }
+            res.status(200).send(userData)
+        } catch (error) {
+            res.status(500).send('Não foi possível executar essa ação');
+        }
+    }
     // RF(05) WORKING
     static async editUserData(req, res){
         try {
