@@ -9,21 +9,24 @@ class postController{
 
     // RF(08) - CREATE POSTS
     static async sendPost(req, res){
-        const {filename} = req.file;
+        
+        let response;
         try {
             const selectedUser = await userModel.findOne({email: req.body.email});
             if(!selectedUser) return res.status(400).send('Não foi possível executar esta ação!')
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
             if(!authorization) return res.status(403).send(`Não foi possível enviar o post ${error}`)
-            const response = await UploadImage(filename);
+            if(req.file?.filename){
+                response = await UploadImage(req.file?.filename);
+            }
             const newPost = new postModel({
                 content: req.body.content,
                 autor: selectedUser._id,
-                image_url: (filename) ? response.url : ''
+                image_url: (req.file) ? response.url : ''
             })
             await newPost.save();
-            if(response.status){
-                fs.unlink(`./src/temp/uploads/${filename}`, function (err){
+            if(response?.status){
+                fs.unlink(`./src/temp/uploads/${req.file?.filename}`, function (err){
                     if (err) throw err;
                     console.log('Arquivo deletado!');
                 })
@@ -72,7 +75,7 @@ class postController{
         }
     }
     //RF (11) WORKING AND RF(14)/ RF(16) LIST FOR PERFIL...
-    static async listPostForUser(req, res){
+    static async listPostById(req, res){
         const id = req.params.id;
         try {
             const userPost = await postModel.find({_id: id}).populate({path:'autor', select: 'name email createdDate age'}).exec();
@@ -80,6 +83,21 @@ class postController{
         } 
         catch (error) {
             res.status(400).send(error);
+        }
+    }
+    static async listPostsByUserID(req, res){
+        const {id} = req.params;
+        let userPosts = [];
+        try {
+            const posts = await postModel.find().populate({path:'autor', select: 'name email createdDate age'}).exec();
+            for(let i in posts){
+                if(posts[i].autor._id == id){
+                    userPosts.push(posts[i]);
+                }
+            }
+            res.status(200).send(userPosts);
+        } catch (error) {
+            
         }
     }
     // RF (12) DELETE POSTS

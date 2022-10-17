@@ -80,10 +80,11 @@ class userController{
     }
     // RF(04) Working
     static async listOneEmail(req, res){
-        if(!token) return res.stauts(400).send('Não foi possível executar essa ação');
+        const token = req.body.token;
+        if(!token) return res.status(400).send('Não foi possível executar essa ação');
         try {
-            const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
-            if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!'); a
+            const authorization = jwt.verify(token , process.env.SECRET_TOKEN);
+            if(!authorization) return res.status(403).send('Não foi possível editar os dados do usuário!');
             const userSelected = await userModel.findOne({email: req.body.email});
             const userData = {
                 _id: userSelected._id,
