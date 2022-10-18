@@ -39,7 +39,7 @@ class postController{
     //RF (09) WORKING LIST ALL POSTS
     static async listPost(req, res){
         try {
-            const posts = await postModel.find().populate({path:'autor', select: 'name email createdDate age'}).exec()
+            const posts = await postModel.find().populate({path:'autor', select: 'name email avatar createdDate age'}).exec()
             res.status(200).send(posts);
         } catch (error) {
             res.status(400).send(error);
@@ -78,7 +78,7 @@ class postController{
     static async listPostById(req, res){
         const id = req.params.id;
         try {
-            const userPost = await postModel.find({_id: id}).populate({path:'autor', select: 'name email createdDate age'}).exec();
+            const userPost = await postModel.find({_id: id}).populate({path:'autor', select: 'name email avatar createdDate age'}).exec();
             res.status(200).send(userPost);
         } 
         catch (error) {
@@ -89,7 +89,7 @@ class postController{
         const {id} = req.params;
         let userPosts = [];
         try {
-            const posts = await postModel.find().populate({path:'autor', select: 'name email createdDate age'}).exec();
+            const posts = await postModel.find().populate({path:'autor', select: 'name email createdDate avatar age'}).exec();
             for(let i in posts){
                 if(posts[i].autor._id == id){
                     userPosts.push(posts[i]);

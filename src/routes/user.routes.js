@@ -1,6 +1,6 @@
 const express = require("express");
+const multerConfig = require('../config/multer');
 const userController = require("../controllers/userController");
-
 // RF 01 - 08 
 
 const router = express.Router();
@@ -18,6 +18,7 @@ router.get("/", (req, res)=>{
     .put('/users/habilitar/:id', userController.habilitarPerfil) // RF (06)
     .put('/users/recover/password', userController.recoverPassword) // RF (03)
     .put('/users/update/:id', userController.editUserData) // RF (05)
+    .put('/users/edit/avatar/:id',multerConfig.single('file'), userController.updateAvatar) // RF(PLUS)
     .delete('/users/remove/:id', userController.deleteUser) // RF (07)
 
 module.exports = router;

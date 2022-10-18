@@ -1,6 +1,7 @@
 const userModel = require("../models/User.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const UploadImage = require("../uploadImages/upload.js");
 
 const saltKey = bcrypt.genSaltSync(14);
 
@@ -71,6 +72,8 @@ class userController{
                 name: userSelected.name,
                 age: userSelected.age,
                 email: userSelected.email,
+                avatar: userSelected.avatar,
+                habilitado: userSelected.habilitado,
                 createdDate: userSelected.createdDate
             };
             res.status(200).send(userData);
@@ -91,6 +94,7 @@ class userController{
                 name: userSelected.name,
                 age: userSelected.age,
                 email: userSelected.email,
+                avatar: userSelected.avatar,
                 createdDate: userSelected.createdDate
             }
             res.status(200).send(userData)
@@ -103,12 +107,11 @@ class userController{
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
             if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
-            const cryptPassword = bcrypt.hashSync(req.body.password, saltKey);
             await userModel.updateOne({_id: req.params.id}, {$set:{
                 name: req.body.name,
                 age: req.body.age,
                 email: req.body.email,
-                password: cryptPassword
+                habilitado: req.body.habilitado
             }});
             res.status(200).send('Dados do usuário editados com sucesso!');
         } catch (error) {
@@ -148,6 +151,31 @@ class userController{
             res.status(200).send(userSelected);
         } catch (error) {
             res.status(400).send('Houve um erro: ' + error);
+        }
+    }
+    // RF (PLUS)
+    static async updateAvatar(req, res){
+        const {id} = req.params;
+        const {filename} = req.file;
+        try {
+            const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
+            if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
+            const selectedUser = await userModel.findOne({_id: id});
+            if(!selectedUser) return res.status(400).send('Não foi possível editar os dados do usuário!');
+            const response = await UploadImage(filename);
+            await userModel.updateOne({_id: req.params.id}, {$set:{
+                avatar: response.url    
+            }});
+            res.status(200).send(response.url);
+            if(response.status){
+                fs.unlink(`./src/temp/uploads/${filename}`, function (err){
+                    if (err) throw err;
+                    console.log('Arquivo deletado!');
+                });
+            }
+            
+        } catch (error) {
+            res.status(500).send(error)
         }
     }
 }
