@@ -3,6 +3,7 @@ const userModel = require("../models/User");
 
 class commentsController{
     // RF - Comments 01
+
     static async listAllComments(req, res){
         try {
             const allComments = await commentsModel.find().populate({path: 'users posts'}).exec();
@@ -12,6 +13,7 @@ class commentsController{
         }
     }
     // RF - Comments 02
+
     static async listPostComments(req, res){
         const {id} = req.params;
         try {
@@ -23,8 +25,8 @@ class commentsController{
         }   
     }
     // RF - Comments 03
+
     static async createComment(req, res){
-        const {id} = req.params;
         const token = req.body.token;
         if(!token) return res.status(403).send('Não foi possível fazer esse comentário');
         try {
@@ -33,7 +35,7 @@ class commentsController{
             const newComment = new commentsModel({
                 content: req.body.cotent,
                 autorId: selectedUser._id,
-                postId: id
+                postId: req.body.id
             })
             newComment.save();
             res.status(201).send('Comentário feito com sucesso!');
