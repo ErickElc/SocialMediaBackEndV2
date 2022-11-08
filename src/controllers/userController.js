@@ -164,7 +164,7 @@ class userController{
             if(!selectedUser) return res.status(400).send('Não foi possível editar os dados do usuário!');
             const response = await UploadImage(filename);
             await userModel.updateOne({_id: req.params.id}, {$set:{
-                avatar: response.url    
+                avatar: !response.url ? response.url : selectedUser, 
             }});
             res.status(200).send(response.url);
             if(response.status){
