@@ -1,7 +1,9 @@
-const userModel = require("../models/User.js");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const UploadImage = require("../uploadImages/upload.js");
+const userModel = require("../models/User.js");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const fs = require('fs');
+
 
 const saltKey = bcrypt.genSaltSync(14);
 
@@ -156,25 +158,29 @@ class userController{
     // RF (PLUS)
     static async updateAvatar(req, res){
         const {id} = req.params;
-        const {filename} = req.file;
+        const filename = req.file?.filename;
+        let response
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
             if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
             const selectedUser = await userModel.findOne({_id: id});
             if(!selectedUser) return res.status(400).send('Não foi possível editar os dados do usuário!');
-            const response = await UploadImage(filename);
-            await userModel.updateOne({_id: req.params.id}, {$set:{
-                avatar: response.url, 
+            if(req.file?.filename){
+                response = await UploadImage(filename);
+            }
+            await userModel.updateOne({_id: req.params?.id}, {$set:{
+                avatar: (response.url) ? response.url : selectedUser.avatar, 
             }});
-            res.status(200).send(response.url);
             if(response.status){
                 fs.unlink(`./src/temp/uploads/${filename}`, function (err){
                     if (err) throw err;
                     console.log('Arquivo deletado!');
                 });
             }
+            res.status(200).send('Foto atualizado');
             
         } catch (error) {
+            console.log(error)
             res.status(500).send(error)
         }
     }
