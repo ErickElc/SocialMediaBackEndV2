@@ -114,7 +114,7 @@ class userController{
                 name: req.body.name,
                 age: req.body.age,
                 email: req.body.email,
-                cpf: userSelected.cpf,
+                cpf: req.body.cpf,
                 habilitado: req.body.habilitado
             }});
             res.status(200).send('Dados do usuário editados com sucesso!');
@@ -161,7 +161,7 @@ class userController{
     static async updateAvatar(req, res){
         const {id} = req.params;
         const filename = req.file?.filename;
-        let response
+        let response;
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
             if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
