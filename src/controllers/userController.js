@@ -72,6 +72,7 @@ class userController{
               const userData = {
                 _id: userSelected._id,
                 name: userSelected.name,
+                cpf: userSelected.cpf,
                 age: userSelected.age,
                 email: userSelected.email,
                 avatar: userSelected.avatar,
