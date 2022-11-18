@@ -19,6 +19,6 @@ router.get("/", (req, res)=>{
     .put('/users/recover/password', userController.recoverPassword) // RF (03)
     .put('/users/update/:id', userController.editUserData) // RF (05)
     .put('/users/edit/avatar/:id',multerConfig.single('file'), userController.updateAvatar) // RF(PLUS)
-    .delete('/users/remove/:id', userController.deleteUser) // RF (07)
+    .post('/users/remove/:id', userController.deleteUser) // RF (07)
 
 module.exports = router;
