@@ -12,7 +12,6 @@ const saltKey = bcrypt.genSaltSync(14);
 class userController{
 
     // RF (01) WORKING
-
     static async registerUser(req, res){
         const EmailExist = await userModel.findOne({email: req.body.email});
         if(EmailExist)  return res.status(400).send("Não foi possível cadastrar esse e-mail, pois ele já foi cadastrado!");     
@@ -20,6 +19,7 @@ class userController{
         const userRegister = new userModel({
             name: req.body.name,
             age: req.body.age,
+            cpf: req.body.cpf,
             email: req.body.email,
             password: cryptPassword,
         });
@@ -52,7 +52,7 @@ class userController{
         if(!req.body.email) return res.status(400).send('Não foi possível recuperar a senha, pois o e-mail não foi informado!');
         try {
             const userSelected = await userModel.findOne({email: req.body.email});
-            if(userSelected.age != req.body.age) return res.status(400).send('Não foi possível recuperar a senha, pois a idade não confere!');
+            if(userSelected.cpf != req.body.cpf) return res.status(400).send('Não foi possível recuperar a senha, pois a idade não confere!');
             const cryptPassword = bcrypt.hashSync(req.body.password, saltKey);
             await userModel.updateOne({email: req.body.email}, {$set:{
                 password: cryptPassword
@@ -72,6 +72,7 @@ class userController{
               const userData = {
                 _id: userSelected._id,
                 name: userSelected.name,
+                cpf: userSelected.cpf,
                 age: userSelected.age,
                 email: userSelected.email,
                 avatar: userSelected.avatar,
@@ -95,6 +96,7 @@ class userController{
                 _id: userSelected._id,
                 name: userSelected.name,
                 age: userSelected.age,
+                cpf: userSelected.cpf,
                 email: userSelected.email,
                 avatar: userSelected.avatar,
                 createdDate: userSelected.createdDate
@@ -113,6 +115,7 @@ class userController{
                 name: req.body.name,
                 age: req.body.age,
                 email: req.body.email,
+                cpf: req.body.cpf,
                 habilitado: req.body.habilitado
             }});
             res.status(200).send('Dados do usuário editados com sucesso!');
@@ -159,7 +162,7 @@ class userController{
     static async updateAvatar(req, res){
         const {id} = req.params;
         const filename = req.file?.filename;
-        let response
+        let response;
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
             if(!authorization)return res.status(403).send('Não foi possível editar os dados do usuário!');
