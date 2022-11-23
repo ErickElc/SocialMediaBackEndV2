@@ -47,7 +47,7 @@ class postController{
     }
     //RF (10) WORKING EDIT POSTS
     static async editPost(req, res){
-        const {filename} = req.file;
+        const filename = req.file?.filename;
         const {id} = req.params;
         try {
             const authorization = jwt.verify(req.body.token, process.env.SECRET_TOKEN);
@@ -58,11 +58,13 @@ class postController{
             if(!findUser) return res.status(403).send('Não foi possível concluir essa ação!');
             if(findPost.autor._id == findUser._id) return res.status(403).send('Você não tem permissão para fazer esssa ação!');
             const response = await UploadImage(filename);
-            if(response.status){
-                fs.unlink(`./src/temp/uploads/${filename}`, function (err){
-                    if (err) throw err;
-                    console.log('Arquivo deletado!');
-                });
+            if(filename){
+                if(response.status){
+                    fs.unlink(`./src/temp/uploads/${filename}`, function (err){
+                        if (err) throw err;
+                        console.log('Arquivo deletado!');
+                    });
+                }
             }
             await postModel.findOneAndUpdate({_id: id},{$set:{
                 content: (req.body.content) ? req.body.content : findPost.content,
@@ -71,6 +73,7 @@ class postController{
             console.log((!filename) ?  findPost.image_url : response.url)
             res.status(200).send('Post atualizado com sucesso!');
         } catch (error) {
+            console.log(error)
             res.status(500).send('Ocorreu um erro, tente novamente mais tarde')
         }
     }
